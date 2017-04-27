@@ -1,0 +1,54 @@
+diff --git a/arch/arm/cpu/armv8/gxb/bl31_apis.c b/arch/arm/cpu/armv8/gxb/bl31_apis.c
+index 992742b..3e1c769 100644
+--- arch/arm/cpu/armv8/gxb/bl31_apis.c
++++ arch/arm/cpu/armv8/gxb/bl31_apis.c
+@@ -62,7 +62,7 @@ int32_t meson_trustzone_efuse(struct efuse_hal_api_arg *arg)
+ 	if (arg->cmd == EFUSE_HAL_API_WRITE)
+ 		memcpy((void *)sharemem_input_base,
+ 		       (const void *)arg->buffer_phy, size);
+-		asm __volatile__("" : : : "memory");
++	asm __volatile__("" : : : "memory");
+ 
+ 	register uint64_t x0 asm("x0") = cmd;
+ 	register uint64_t x1 asm("x1") = offset;
+diff --git a/drivers/mmc/aml_sd_emmc.c b/drivers/mmc/aml_sd_emmc.c
+index 86ce009..cca0884 100644
+--- drivers/mmc/aml_sd_emmc.c
++++ drivers/mmc/aml_sd_emmc.c
+@@ -241,7 +241,7 @@ static int sd_inand_staff_init(struct mmc *mmc)
+     }
+     if (!sdio->inited_flag)
+         sdio->inited_flag = 1;
+-	return SD_NO_ERROR;
++    return SD_NO_ERROR;
+ }
+ 
+ 
+diff --git a/drivers/usb/gadget/s3c_udc_otg.c b/drivers/usb/gadget/s3c_udc_otg.c
+index e6325e2..c47be44 100644
+--- drivers/usb/gadget/s3c_udc_otg.c
++++ drivers/usb/gadget/s3c_udc_otg.c
+@@ -68,7 +68,6 @@ static char *state_names[] = {
+ struct s3c_udc	*the_controller;
+ 
+ static const char driver_name[] = "s3c-udc";
+-static const char driver_desc[] = DRIVER_DESC;
+ static const char ep0name[] = "ep0-control";
+ 
+ /* Max packet size*/
+diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
+index e057bd2..22eb7b9 100644
+--- include/linux/compiler-gcc.h
++++ include/linux/compiler-gcc.h
+@@ -110,7 +110,11 @@
+ 
+ #define __gcc_header(x) #x
+ #define _gcc_header(x) __gcc_header(linux/compiler-gcc##x.h)
++#if __GNUC__ > 5
++#define gcc_header(x) _gcc_header(5)
++#else
+ #define gcc_header(x) _gcc_header(x)
++#endif
+ #include gcc_header(__GNUC__)
+ 
+ #if !defined(__noclone)

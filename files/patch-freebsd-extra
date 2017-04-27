@@ -1,0 +1,72 @@
+diff --git a/Makefile b/Makefile
+index 4cb6cde..943fc0e 100644
+--- Makefile
++++ Makefile
+@@ -899,9 +899,9 @@ endif
+ 	@cp -f $(FIP_FOLDER_SOC)/u-boot.* $(FIP_FOLDER)/
+ 	$(Q)dd if=$(FIP_FOLDER)/u-boot.bin of=$(FUSING_FOLDER)/u-boot.bin bs=512 skip=96
+ 	@rm -f $(FIP_FOLDER_SOC)/boot_new.bin
+-	@dd if=$(FUSING_FOLDER)/bl1.bin.hardkernel of=$(srctree)/u-boot.bin conv=fsync
+-	@dd if=$(FUSING_FOLDER)/bl1.bin.hardkernel of=$(srctree)/u-boot.bin conv=fsync,notrunc bs=512 skip=1 seek=1
+-	@dd if=$(FUSING_FOLDER)/u-boot.bin of=$(srctree)/u-boot.bin conv=fsync,notrunc bs=512 seek=97
++	@dd if=$(FUSING_FOLDER)/bl1.bin.hardkernel of=$(srctree)/u-boot.bin conv=sync
++	@dd if=$(FUSING_FOLDER)/bl1.bin.hardkernel of=$(srctree)/u-boot.bin conv=sync,notrunc bs=512 skip=1 seek=1
++	@dd if=$(FUSING_FOLDER)/u-boot.bin of=$(srctree)/u-boot.bin conv=sync,notrunc bs=512 seek=97
+ 	@echo '$(FIP_FOLDER_SOC)/u-boot.bin build done!'
+ 
+ #
+diff --git a/include/configs/odroidc2.h b/include/configs/odroidc2.h
+index 5d0c93f..9502049 100755
+--- include/configs/odroidc2.h
++++ include/configs/odroidc2.h
+@@ -190,6 +190,8 @@
+ #define CONFIG_CMD_MMC			1
+ #endif
+ 
++#define CONFIG_SYS_MMC_MAX_DEVICE	1
++
+ #define	CONFIG_PARTITIONS		1
+ #define CONFIG_SYS_NO_FLASH		1
+ 
+@@ -277,4 +279,6 @@
+ /* Wakeup from GPIO key */
+ #define CONFIG_GPIO_WAKEUP		1
+ 
++#define CONFIG_API			1
++
+ #endif
+diff --git a/sd_fuse/sd_fusing.sh b/sd_fuse/sd_fusing.sh
+index 538185b..96d89ed 100755
+--- sd_fuse/sd_fusing.sh
++++ sd_fuse/sd_fusing.sh
+@@ -24,9 +24,9 @@ if [ ! -f $UBOOT ]; then
+         exit 1
+ fi
+ 
+-sudo dd if=$BL1 of=$1 conv=fsync bs=1 count=442
+-sudo dd if=$BL1 of=$1 conv=fsync bs=512 skip=1 seek=1
+-sudo dd if=$UBOOT of=$1 conv=fsync bs=512 seek=97
++sudo dd if=$BL1 of=$1 conv=sync bs=1 count=442
++sudo dd if=$BL1 of=$1 conv=sync bs=512 skip=1 seek=1
++sudo dd if=$UBOOT of=$1 conv=sync bs=512 seek=97
+ 
+ sync
+ 
+diff --git a/tools/fip_create/Makefile b/tools/fip_create/Makefile
+index 69569a1..e7484b2 100644
+--- tools/fip_create/Makefile
++++ tools/fip_create/Makefile
+@@ -51,11 +51,11 @@ all: ${PROJECT}
+ 
+ ${PROJECT}: ${OBJECTS} Makefile
+ 	@echo "  LD      $@"
+-	${Q}${CC} ${OBJECTS} -o $@
++	${Q}${HOSTCC} ${OBJECTS} -o $@
+ 
+ %.o: %.c %.h Makefile
+ 	@echo "  CC      $<"
+-	${Q}${CC} -c ${CFLAGS} ${INCLUDE_PATHS} $< -o $@
++	${Q}${HOSTCC} -c ${CFLAGS} ${INCLUDE_PATHS} $< -o $@
+ 
+ clean:
+ 	${Q}${RM} ${PROJECT}
